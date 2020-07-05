@@ -1,11 +1,65 @@
-.main {
-  height: 100%;
+$fontSize: 4rem;
 
-  .form-wrapper { 
-    height: 100%;
+.main {
+  padding: 16px;
+  height: calc(100% - 32px);
+  width: calc(100% - 32px);
+
+  &.underweight {
+    background: #5D838C;
+  }
+
+  &.healthy {
+    background: #238C7F;
+  }
+
+  &.overweight {
+    background: #F2B872;
+  }
+
+  &.obese {
+    background: #F27272;
+  }
+
+  .label {
+    font-size: $fontSize;
+  }
+
+  .form-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
 
     .input-wrapper {
-      height: 50%;
+      width: 50%;
+      min-width: 30rem;
+      display: flex;
+      align-items: center;
+
+      .number-input {
+        width: 33%;
+        border: none;
+        font-size: $fontSize;
+        text-align: right;
+        text-decoration: underline;
+        background: transparent;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+  }
+
+  .output-wrapper {
+    height: 66%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .output {
+      font-size: $fontSize * 4;
     }
   }
 }
