@@ -1,28 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
+import convert from 'convert-units';
 import clsx from 'clsx';
 
 import Loader from '../Loader/Loader';
 
 import { FhirContext } from '../../context/FhirContext';
 
-import usePatient from '../../parsers/usePatient';
 import useObservation from '../../parsers/useObservation';
 
 import './Main.scss';
 
 const DEFAULT_HEIGHT = 68;
-const DEFAULT_WEIGHT = 175
+const DEFAULT_WEIGHT = 175;
+const UNITS = ['Imperial', 'Metric'];
 
 const Main = () => {
   const fhir = useContext(FhirContext);
   const [height, setHeight] = useState();
   const [weight, setWeight] = useState(DEFAULT_WEIGHT);
-
-  const {
-    loading: patientLoading,
-    lastName,
-    firstName
-  } = usePatient(fhir);
+  const [selectedUnit, setSelectedUnit] = useState(UNITS[0]);
 
   const { 
     loading: observationLoading,
@@ -35,15 +31,36 @@ const Main = () => {
     setWeight(weightFhir ? weightFhir.value : DEFAULT_WEIGHT);
   }, [heightFhir, weightFhir]);
 
-  const handleChangeHeight = (element) => {
-    setHeight(+element.target.value);
+  const handleChangeHeight = (event) => {
+    setHeight(+event.target.value);
   }
 
-  const handleChangeWeight = (element) => {
-    setWeight(+element.target.value);
+  const handleChangeWeight = (event) => {
+    setWeight(+event.target.value);
   }
 
-  const bmi = (703 * weight / (height ** 2)).toFixed(1);
+
+  const defaultUnits = selectedUnit === UNITS[0] ? ['lb', 'in'] : ['kg', 'm'];
+
+  const handleUnitChange = (event) => {
+    const value = event.target.value;
+    const targetUnits = value === UNITS[0] ? ['lb', 'in'] : ['kg', 'm'];
+
+    console.log(defaultUnits, targetUnits);
+
+    const newWeight = convert(weight).from(defaultUnits[0]).to(targetUnits[0]);
+    const newHeight = convert(height).from(defaultUnits[1]).to(targetUnits[1]);
+
+    console.log(newWeight, newHeight);
+    
+    setWeight(newWeight.toFixed(2));
+    setHeight(newHeight.toFixed(2));
+
+    setSelectedUnit(value);
+  }
+
+  const bmiMultiplier = selectedUnit === UNITS[0] ? 703 : 1;
+  const bmi = (bmiMultiplier * weight / (height ** 2)).toFixed(1);
 
   let status = 'obese';
 
@@ -73,7 +90,7 @@ const Main = () => {
                 value={weight || 0}
                 onChange={handleChangeWeight}
               />
-              <span className='label'>{`${weightFhir ? weightFhir.unit : 'lb'}${weight !== 1 ? 's' : ''}`}</span>
+              <span className='label'>{`${weightFhir ? weightFhir.unit : defaultUnits[0]}${weight !== 1 ? 's' : ''}`}</span>
             </>
           }
         </div>
@@ -87,8 +104,26 @@ const Main = () => {
                 value={height || 0}
                 onChange={handleChangeHeight}
               />
-              <span className='label'>{`${heightFhir ? heightFhir.unit : 'in'}${height !== 1 ? 's' : ''}`}</span>
+              <span className='label'>{`${heightFhir ? heightFhir.unit : defaultUnits[1]}${height !== 1 ? 's' : ''}`}</span>
             </>
+          }
+        </div>
+        <div className='input-wrapper'>
+          {
+            UNITS.map((unit) => (
+              <div className='radio-button' key={unit}>
+                <label>
+                  <input
+                    type='radio'
+                    name='unit-selection'
+                    checked={selectedUnit === unit}
+                    onChange={handleUnitChange}
+                    value={unit}
+                  />
+                  {unit}
+                </label>
+              </div>
+            ))
           }
         </div>
       </form>
